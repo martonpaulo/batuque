@@ -68,6 +68,7 @@ const angleAt = bar => (bar % 1) * TAU - Math.PI / 2; // where a hit sits on the
 export function createBregafunkBackground() {
   let emissions = [], // { kind, born, angle }
     lastFlash = -Infinity,
+    lastTime = -Infinity,
     bloom = 0;
   const flashes = []; // when each bright emission started, for the flash limit's test
   const seen = new Set();
@@ -125,6 +126,15 @@ export function createBregafunkBackground() {
     ctx.fillStyle = PALETTE.ground;
     ctx.fillRect(0, 0, width, height);
     ctx.globalAlpha = 1;
+    // a jump back on the clock (a tool that draws an earlier position): what was born after it is
+    // forgotten, or a ring would be drawn before its birth, with a negative radius
+    if (time < lastTime) {
+      emissions = [];
+      seen.clear();
+      lastFlash = -Infinity;
+      bloom = 0;
+    }
+    lastTime = time;
     collect(recent, time, params.sceneId);
     bloom *= Math.exp(-step / BLOOM.decay);
 

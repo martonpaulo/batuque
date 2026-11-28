@@ -278,3 +278,51 @@ test('the wheel leans on alternate beats and swells on the bumbo, by position al
   const swell = BREGAFUNK.wheelMotion(2, [{ voice: 'bumbo', hit: { velocity: 1 }, age: 0 }]);
   assert.ok(swell.scale > 1);
 });
+
+// #67: a tool that drew an earlier position after a later one (the motion lab, a scene at a time)
+// left rings born «in the future»; the canvas refuses their negative radius and the page threw.
+test('a jump back on the clock draws no ring before its birth', () => {
+  const FPS = 30,
+    radii = [];
+  const record = {
+    createRadialGradient: () => ({ addColorStop: () => {} }),
+    arc: (_x, _y, radius) => radii.push(radius),
+    ellipse: (_x, _y, radiusX, radiusY) => radii.push(radiusX, radiusY),
+  };
+  const ctx = new Proxy({}, { get: (_target, key) => record[key] || (() => {}), set: () => true });
+  const layer = createBregafunkBackground(),
+    { barSeconds } = meterOf(BREGAFUNK);
+  const geometry = { width: 400, height: 800, centreX: 200, centreY: 330, scopeRadius: 120, dpr: 1, shapes: [] };
+  const drawAt = (time, fresh = false) => {
+    const position = time / barSeconds,
+      recent = show.recentHits(position, 1.2);
+    layer.draw(ctx, {
+      ...geometry,
+      position,
+      params: { sceneId: show.sceneAt(Math.floor(position)).id },
+      recent,
+      time,
+      step: 1 / FPS,
+      fresh,
+      energy: show.energyOf(recent),
+      flow: show.flowAt(position),
+    });
+  };
+  const drop = show.sceneById('drop'),
+    end = (drop.start + drop.bars) * barSeconds;
+  for (let time = drop.start * barSeconds; time < end; time += 1 / FPS) drawAt(time); // the horns' gold rings are alive
+  const before = layer.flashTimes().length;
+  for (let time = 0; time < 2 * barSeconds; time += 1 / FPS) drawAt(time, time === 0); // then the show's start
+  assert.ok(radii.length > 0);
+  assert.deepEqual(
+    radii.filter(radius => !(radius >= 0)),
+    [],
+  );
+  // and the bright emissions start again at once, not only when the clock passes the jump's origin
+  for (let time = 0; time < end; time += 1 / FPS) drawAt(time, time === 0);
+  const again = layer.flashTimes().slice(before);
+  assert.ok(
+    again.some(time => time < drop.start * barSeconds),
+    'a ray or a ring is born before the drop on the second pass',
+  );
+});
