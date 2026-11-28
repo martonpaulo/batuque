@@ -107,12 +107,18 @@ changes of 10 % relative luminance in one cell within a second, and the share of
 than three, the limit of WCAG 2.3.1). Per show it prints how the change follows the energy over the
 scenes. A cell is about a hundredth of the stage's width, so one small shape that crosses it counts
 as a change of that cell; the limit of WCAG 2.3.1 is about a quarter of a 10° field, which is far
-more cells at once.
+more cells at once. So each scene's line ends with that area
+([#67](https://github.com/martonpaulo/batuque/issues/67)): the largest share of a 10° field (341 by
+256 CSS px, upright or on its side) whose cells make more than three flashes in the same second,
+and when; the show's last line says whether any scene passes a quarter. A flash to or from a
+saturated red is not told apart from any other.
 
 ```sh
 node lab/motion.mjs coco                       # one show: about a minute
 node lab/motion.mjs coco frevo --seconds 2     # several, a shorter window
 node lab/motion.mjs brega --shots out/brega    # also one picture of the stage per scene
+node lab/motion.mjs maracatu --seconds 600     # the whole of each scene, for the flash limit
+node lab/motion.mjs maracatu --window 1440x900 # at a desktop's window, where the stage is larger
 ```
 
 Measure a background before the owner looks at it, and compare with the run before the change.

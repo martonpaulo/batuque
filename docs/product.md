@@ -153,7 +153,8 @@ The rules every rhythm package in `src/rhythms/` follows.
   painter the music's energy and an energy clock, both read from the timeline at the show position
   (`energyOf` and `flowAt` in `src/show.js`), and each painter moves by them in its own way; with
   reduced motion they move nothing. `node lab/motion.mjs <id>` measures it through the page: how
-  much of the picture moves in each scene, whether that follows the energy, and the flashes
+  much of the picture moves in each scene, whether that follows the energy, the flashes and how
+  much of a 10° field flashes at once, against the quarter WCAG 2.3.1 allows
   ([`lab/README.md`](../lab/README.md#motion)).
 - **Sound.** Real CC0 recordings first. A synthesized voice must sound like the real instrument.
   One sample repeated unchanged is not acceptable: use round robin, velocity layers, humanised
