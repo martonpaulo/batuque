@@ -49,12 +49,15 @@ const at = part => part.steps.map((step, i) => hit(step, part.velocity[i % part.
 // What the references' drums play, per sixteenth (docs/rhythms/bregafunk.md, The beat): the bumbo on
 // 1 and 9, the lata on 7 and 13, and a palma on every beat, strong on 5 and 13, between the bumbos,
 // and soft with them on 1 and 9. The references strike on every beat in the mid band; with one palma
-// a bar, on 9, the show's only regular pulse was every second beat, and it felt slow (#75). A
-// phrase's last bar («turn») adds a pick-up bumbo and a second lata stroke.
+// a bar, on 9, the show's only regular pulse was every second beat, and it felt slow (#75). With a
+// palma on every beat the owner still heard it slow: three of the four references also repeat at
+// half the beat, and strike the mid band 295 to 390 times a minute. So a soft palma stands between
+// two beats on 3, 11 and 15 (7 is the lata's), and the chimbal marks every half beat (HATS).
+// A phrase's last bar («turn») adds a pick-up bumbo and a second lata stroke.
 export const BEAT = {
   bumbo: { steps: [0, 8], velocity: [1, 0.92] },
   lata: { steps: [6, 12], velocity: [1, 0.9] },
-  palma: { steps: [0, 4, 8, 12], velocity: [0.45, 0.9] },
+  palma: { steps: [0, 2, 4, 8, 10, 12, 14], velocity: [0.45, 0.35, 0.9, 0.45, 0.4, 0.9, 0.45] },
 };
 const TURN = {
   bumbo: { steps: [0, 8, 14], velocity: [1, 0.92, 0.7] },
@@ -72,27 +75,28 @@ export const TAMBORZAO = {
   bumbo: { steps: [0, 3, 10, 13], velocity: [1, 0.7, 0.95, 0.7] },
   drum: { steps: [0, 3, 6, 10, 13], tones: ['grave', 'agudo', 'agudo', 'grave', 'agudo'] },
 };
-// The chimbal: four dry strokes between the drums, the last one open every other bar, a short roll
-// at the end of a phrase. [step, velocity, tone]
-const HATS = {
+// The chimbal: four dry strokes, one on each half beat between two beats (3, 7, 11 and 15), so that
+// every eighth of the bar has a stroke and the ear counts the beat in two (#75); the last one open
+// every other bar, a short roll at the end of a phrase. [step, velocity, tone]
+export const HATS = {
   plain: [
-    [2, 0.5, 'closed'],
-    [4, 0.7, 'closed'],
-    [10, 0.5, 'closed'],
-    [14, 0.62, 'closed'],
+    [2, 0.7, 'closed'],
+    [6, 0.75, 'closed'],
+    [10, 0.7, 'closed'],
+    [14, 0.8, 'closed'],
   ],
   open: [
-    [2, 0.5, 'closed'],
-    [4, 0.7, 'closed'],
-    [10, 0.5, 'closed'],
-    [14, 0.7, 'open'],
+    [2, 0.7, 'closed'],
+    [6, 0.75, 'closed'],
+    [10, 0.7, 'closed'],
+    [14, 0.8, 'open'],
   ],
   turn: [
-    [2, 0.5, 'closed'],
-    [4, 0.7, 'closed'],
-    [10, 0.5, 'closed'],
-    [14, 0.6, 'double'],
-    [15, 0.75, 'double'],
+    [2, 0.7, 'closed'],
+    [6, 0.75, 'closed'],
+    [10, 0.7, 'closed'],
+    [14, 0.7, 'double'],
+    [15, 0.8, 'double'],
   ],
 };
 const PHRASE_BARS = 4; // drums and keys turn every four bars
@@ -434,7 +438,7 @@ const STUDIO = {
     chimbal: {
       seed: 34,
       role: 'grid',
-      gain: 0.18,
+      gain: 0.3,
       pan: 0.3,
       send: 0.06,
       bright: [5000, 18000],
@@ -644,7 +648,7 @@ const LAYOUTS = {
   batida: () =>
     notation(notationRow(COPY.voices.bumbo, BEAT.bumbo.steps, 'bumbo'), notationRow(COPY.voices.lata, BEAT.lata.steps, 'lata')) +
     row(label(T.grouping), `${T.groupingValue} ${T.groupingUnit}`) +
-    row(label(T.everyBeat), countFromOne(BEAT.palma.steps), 'palma'),
+    row(label(T.everyBeat), countFromOne(BEAT.palma.steps.filter(step => step % STEPS_PER_BEAT === 0)), 'palma'),
   juntos: () => row(label(T.riff), T.notesValue, 'flauta') + row(label(T.stop), T.stopValue) + row(label(T.few), T.fewValue, 'chimbal'),
   grave: () => entry + row(label(T.likeRiff), T.notesValue, 'grave') + row(label(T.low), T.likeRiffValue, 'grave'),
   parada: () => stats('two', stat(1, T.silentBeat, PALETTE.gold), stat(sceneOf('parada').voices().length, T.voices, PALETTE.tin)),

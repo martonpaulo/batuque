@@ -83,10 +83,11 @@ test('the bumbo on 1 and 9 and the lata on 7 and 13 group the bar as 3 + 3 + 2 e
 
 // #75: the references strike on every beat in the mid band (lab/cell.py: 0.47 to 0.60 at the beat),
 // and the show clapped once a bar, with the second bumbo: its only regular pulse was every second
-// beat, 85 a minute, and the owner heard a slow show. The palma now marks every beat.
+// beat, 85 a minute, and the owner heard a slow show. The palma now marks every beat. The two soft
+// palmas between the beats are the second pass's, tested below.
 test('the palma strikes on every beat, strong between the bumbos and soft with them, in a plain bar, a turn and the passinho', () => {
   const BEATS = [0, 4, 8, 12];
-  const palmas = bar => show.hitsInBar(bar).filter(h => h.voice === 'palma');
+  const palmas = bar => show.hitsInBar(bar).filter(h => h.voice === 'palma' && BEATS.includes(h.hit.step));
   const batida = show.sceneById('batida'),
     passinho = show.sceneById('passinho');
   for (const [name, bar] of [
@@ -110,7 +111,51 @@ test('the palma strikes on every beat, strong between the bumbos and soft with t
   }
   // a stop and the breath keep their one palma: the form's thin bars stay thin
   const respiro = show.sceneById('respiro');
-  assert.equal(palmas(respiro.start).length, 1);
+  assert.equal(show.hitsInBar(respiro.start).filter(h => h.voice === 'palma').length, 1);
+});
+
+// #75, second pass: with a palma on every beat the owner still heard a slow show. Three of the four
+// references repeat at half the beat too (lab/cell.py: 0.30 to 0.44 over all bands, where the
+// rewrite read 0.09) and strike the mid band 295 to 390 times a minute (the rewrite: 220).
+test('every half beat of a plain bar has a stroke: the chimbal between the beats, and a soft palma where the lata is not', () => {
+  const EIGHTHS = [0, 2, 4, 6, 8, 10, 12, 14],
+    BETWEEN = [2, 6, 10, 14];
+  const batida = show.sceneById('batida'),
+    passinho = show.sceneById('passinho');
+  for (const [name, bar] of [
+    ['a plain bar', batida.start],
+    ['a bar with the open chimbal', batida.start + 1],
+    ['a turn', batida.start + batida.bars - 1],
+    ['the passinho', passinho.start],
+  ]) {
+    const sounding = new Set(show.hitsInBar(bar).map(h => h.hit.step));
+    assert.deepEqual(
+      EIGHTHS.filter(step => !sounding.has(step)),
+      [],
+      `${name}: an eighth with no stroke`,
+    );
+    assert.deepEqual(
+      stepsOf(bar, 'chimbal').filter(step => BETWEEN.includes(step)),
+      BETWEEN,
+      `${name}: the chimbal`,
+    );
+    const soft = show.hitsInBar(bar).filter(h => h.voice === 'palma' && BETWEEN.includes(h.hit.step));
+    assert.deepEqual(
+      soft.map(h => h.hit.step),
+      [2, 10, 14],
+      `${name}: the palmas between the beats`,
+    );
+    const strong = Math.max(
+      ...show
+        .hitsInBar(bar)
+        .filter(h => h.voice === 'palma')
+        .map(h => h.hit.velocity),
+    );
+    assert.ok(
+      soft.every(h => h.hit.velocity <= strong / 2),
+      `${name}: a palma between the beats is at most half the strong one`,
+    );
+  }
 });
 
 // Round two (docs/rhythms/bregafunk.md): the riff opens the show, a few strokes tease the beat, and

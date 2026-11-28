@@ -61,8 +61,8 @@ and it is the largest single change in this page.
 | :-------- | :----------------------------------- | :----------------------------------------------------------------------------------- |
 | bumbo     | 1, 9; a pick-up on 15 at phrase ends | Beats 1 and 3, hard and clear (rules 6 and 7)                                        |
 | lata      | 7, 13; a second stroke on 14 at ends | With the first bumbo it groups the bar as 3 + 3 + 2 eighths, the dembow-like bounce  |
-| palma     | 1, 5, 9, 13; strong on 5 and 13      | A clap on every beat, as the references' mid band strikes (#75): soft with the bumbo |
-| chimbal   | 3, 5, 11, 15                         | Few and dry; the last one open every other bar; a 32nd-note roll at phrase ends      |
+| palma     | 1, 5, 9, 13; soft on 3, 11 and 15    | A clap on every beat, strong on 5 and 13 (#75); soft where no lata marks a half beat |
+| chimbal   | 3, 7, 11, 15                         | Dry, on each half beat between two beats; the last one open every other bar (#75)    |
 | grave     | 1 (held), 9, and 13 sliding          | The 808 follows the bumbo; every other bar a note slides into the next bar's root    |
 | teclado   | 7, 13                                | The synth stab plays with the lata, as in the reference; a pick-up at phrase ends    |
 | tamborzão | 1, 4, 7, 11, 14 (3 3 4 3 3)          | The Rio atabaque line, played alone for 4 bars to show why bregafunk is not Rio funk |
@@ -319,6 +319,17 @@ Written from the accepted elements and form above; it is heard by the owner befo
   beat, 348 ms, at 0.60. The stops, the breath and the tease keep their one palma. How exactly the
   bar repeats is unchanged (0.84 over all bands; the references read 0.44 to 0.61): that is the
   form's and the riff's to vary.
+- **The half beat** ([#75](https://github.com/martonpaulo/batuque/issues/75), second pass). The
+  owner heard the palma on every beat and said the show is better and still slow. The tempo is at the
+  top of the references (151 to 171 beats a minute). What they have and the rewrite lacked: three of
+  the four repeat at half the beat too (0.30 to 0.44 over all bands; the rewrite read 0.09), and they
+  strike the mid band 295 to 390 times a minute (the rewrite: 220). So the chimbal's four strokes
+  stand on the half beats between two beats (3, 7, 11 and 15) at a level that is heard as a pulse,
+  and a soft palma stands on 3, 11 and 15, where the lata is not. Every eighth of a plain bar has a
+  stroke, and no sixteenth is added. The render reads 0.43 at half the beat over all bands, 318
+  strokes a minute in the mid band (0.47 at half the beat there), and `lab/sections.py pulse` finds
+  174 ms as its first period, at 0.53, as in two of the references. The owner hears it beside the
+  same render at 180 beats a minute, a tempo over every reference, which only he can choose.
 - **The harmony** is the riff's: the stab is the tonic's root, fifth and octave in the first bar and
   the flat second's bare octave in the second. No chord adds a fourth note to the riff's three but
   the horns' third.
