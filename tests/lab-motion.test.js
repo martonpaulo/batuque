@@ -85,54 +85,29 @@ const gridFrames = (flashing, seconds = 2) =>
     ),
   );
 
+/** The field of a picture whose cells flash where `flashing` says, over `seconds`. */
+const fieldOf = (flashing, seconds, field = FIELD) => flashingField(gridFrames(flashing, seconds), FPS, GRID, field);
+
 test('cells that flash together are measured as a share of the 10° field they fill most', () => {
   // two cells side by side: a quarter of the 4 by 2 field
-  const pair = flashingField(
-    gridFrames((x, y) => y === 5 && (x === 2 || x === 3)),
-    FPS,
-    GRID,
-    FIELD,
-  );
+  const pair = fieldOf((x, y) => y === 5 && (x === 2 || x === 3));
   assert.equal(pair.share, 2 / 8);
   assert.equal(pair.at, 0);
   assert.ok(pair.row <= 5 && pair.row + pair.rows > 5 && pair.column <= 2 && pair.column + pair.columns > 3, 'the rectangle holds both cells');
   // four cells one over another: only the field on its side holds them all
-  const column = flashingField(
-    gridFrames((x, y) => x === 6 && y >= 1 && y <= 4),
-    FPS,
-    GRID,
-    FIELD,
-  );
+  const column = fieldOf((x, y) => x === 6 && y >= 1 && y <= 4);
   assert.equal(column.share, 4 / 8);
   assert.deepEqual([column.columns, column.rows], [2, 4]);
   // every cell: the whole field, never more
-  assert.equal(
-    flashingField(
-      gridFrames(() => true),
-      FPS,
-      GRID,
-      FIELD,
-    ).share,
-    1,
-  );
+  assert.equal(fieldOf(() => true).share, 1);
 });
 
 test('cells that flash in different seconds are not added together, and no flashing cell gives no place', () => {
   // the left cell flashes in the first second only, the right one in the third only
-  const apart = flashingField(
-    gridFrames((x, y, frame) => y === 0 && ((x === 0 && frame < FPS) || (x === 1 && frame >= 2 * FPS)), 3),
-    FPS,
-    GRID,
-    FIELD,
-  );
+  const apart = fieldOf((x, y, frame) => y === 0 && ((x === 0 && frame < FPS) || (x === 1 && frame >= 2 * FPS)), 3);
   assert.equal(apart.share, 1 / 8);
   assert.deepEqual(
-    flashingField(
-      gridFrames(() => false),
-      FPS,
-      GRID,
-      FIELD,
-    ),
+    fieldOf(() => false),
     { share: 0 },
   );
   // three flashes a second, the limit itself, mark no cell
@@ -145,12 +120,7 @@ test('a field larger than the grid is cut to it, and a run shorter than a second
     huge = flashingField(all, FPS, GRID, { width: 31, height: 23 });
   assert.equal(huge.share, 1);
   assert.deepEqual([huge.columns, huge.rows], [GRID.width, GRID.height]);
-  const half = flashingField(
-    gridFrames((_x, y) => y < 4),
-    FPS,
-    GRID,
-    { width: 31, height: 23 },
-  );
+  const half = fieldOf((_x, y) => y < 4, undefined, { width: 31, height: 23 });
   assert.equal(half.share, 1 / 2);
   // 27 frames, under a second: ten changes of a cell are over the limit all the same
   const short = flashingField(all.slice(0, 27), FPS, GRID, FIELD);
