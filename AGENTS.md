@@ -162,6 +162,7 @@ Shape every message and ask the owner as Skill Deck's global rules define (`glob
 - Before a commit, push, published text or release upload, apply `skd-github-publishing-conventions` section 2.
 - If commit or push fails, report the exact failure.
 - Under direct push to the default branch, a red default branch is fixed at once by a new commit, never left for later.
+- A green Validate proves the tests, not the deployment. A change to the site is delivered, and its issue closed, only once the Deploy run that holds its commit is green or the live `build.txt` holds that commit or a later one of `main`: `git merge-base --is-ancestor <sha> "$(curl -fsS https://batuque.martonpaulo.com/build.txt)"`. The workflow tries a failed deployment again twice; one that still fails leaves the open issue «Deploy red on main at `<commit>`», which the next green deployment closes ([#70](https://github.com/martonpaulo/batuque/issues/70)).
 - Close a `completed` issue with the closing comment `skd-github-publishing-conventions` defines.
 - Release or change a version only when the task and recorded policy authorize it, through `project-release`.
 

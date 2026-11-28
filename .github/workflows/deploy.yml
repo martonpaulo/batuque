@@ -30,7 +30,9 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.second.outputs.page_url || steps.third.outputs.page_url }}
+    outputs:
+      current: ${{ steps.tip.outputs.current }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -62,9 +64,54 @@ jobs:
         if: steps.tip.outputs.current == 'true'
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: steps.tip.outputs.current == 'true'
+      # GitHub's list of a run's artifacts can lag the upload: on 2026-11-28 three of six runs failed
+      # here on «No artifacts named "github-pages"», and each run's artifact was listed afterwards.
+      # So a failed try is made again after a wait, twice at most, and only the last try's failure
+      # fails the job (#70).
       - id: deployment
         if: steps.tip.outputs.current == 'true'
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+      - name: Wait before the second try
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - id: second
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+      - name: Wait before the third try
+        if: steps.second.outcome == 'failure'
+        run: sleep 90
+      - id: third
+        if: steps.second.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
       - name: Read the live site back
         if: steps.tip.outputs.current == 'true'
-        run: python3 scripts/live_build_check.py "${{ steps.deployment.outputs.page_url }}build.txt" "${{ github.event.workflow_run.head_sha || github.sha }}"
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url || steps.second.outputs.page_url || steps.third.outputs.page_url }}
+        run: python3 scripts/live_build_check.py "${PAGE_URL}build.txt" "${{ github.event.workflow_run.head_sha || github.sha }}"
+
+  # A deployment that failed leaves a record outside the Actions page: one open issue, «Deploy red on
+  # main at <commit>», which a backlog run takes first, and the next deployment that passes closes it
+  # (#70). It is a job of its own, so the job that publishes holds no token that writes issues, and it
+  # runs only for a commit the deploy job took: a failure, or the tip of main.
+  record:
+    needs: deploy
+    if: ${{ !cancelled() && (needs.deploy.result == 'failure' || needs.deploy.outputs.current == 'true') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Open, update or close the issue of a failed deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.deploy.result }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          printf '{"deploy": {"result": "%s"}}' "$RESULT" | python3 scripts/upstream_check.py alert \
+            --repo "$GITHUB_REPOSITORY" --workflow Deploy --run-url "$RUN_URL" --results - --sha "$SHA"
