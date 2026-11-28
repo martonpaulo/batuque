@@ -10,6 +10,10 @@ import { PREPARING } from '../src/rhythms/preparing.js';
 import { buildSite, DEVELOPMENT_MODULES, PUBLISHED_MARK, preparingPage, published } from '../tools/build-site.mjs';
 import { startStaticServer } from '../tools/static-server.mjs';
 
+const HOME_TITLE_LIMIT = 60; // characters: a longer title is cut in a search result
+const JPEG_START = [0xff, 0xd8, 0xff];
+const CARD_BYTES_LIMIT = 300000; // WhatsApp's soft limit for a preview's picture
+
 test('every rhythm path answers 200 from the built site; a shipped one is the show, one being prepared says so', async () => {
   const parent = mkdtempSync(path.join(os.tmpdir(), 'baque-site-'));
   const out = path.join(parent, 'site');
@@ -27,7 +31,7 @@ test('every rhythm path answers 200 from the built site; a shipped one is the sh
       html
         .replace(/<title>.*<\/title>/, '')
         .replace(/<meta property="og:title"[^>]*>/, '')
-        .replace(/<meta property="og:image" [^>]*>/, '')
+        .replace(/<meta (?:name|property)="(?:og|twitter):image(?::type|:alt)?" [^>]*>/g, '') // the card, its type and its words
         .replace(/<meta (?:name|property)="(?:og:)?description"[^>]*>/g, '')
         .replace(/<script type="application\/ld\+json">.*<\/script>/, '')
         .replace(/https:\/\/batuque\.martonpaulo\.com\/[a-z-]*/g, '');
@@ -117,12 +121,33 @@ test('each rhythm path has its own description and structured data, and the site
       if (data) assert.equal(JSON.parse(data[1]).url, `https://batuque.martonpaulo.com/${id}`, id);
     }
     assert.equal(descriptions.size, ROUTES.length, 'no two paths share a description');
-    // a shipped rhythm's preview is its own card (tools/make-images.mjs), served by the site
+    // a shipped rhythm's preview is its own card (tools/make-images.mjs), served by the site, with its type and its words
+    const metaOf = (html, key) => html.match(new RegExp(`<meta (?:property|name)="${key}" content="([^"]*)">`))?.[1];
     for (const rhythm of RHYTHMS) {
       const html = readFileSync(path.join(out, `${rhythm.id}.html`), 'utf8');
-      assert.match(html, new RegExp(`<meta property="og:image" content="https://batuque\\.martonpaulo\\.com/social/${rhythm.id}\\.png">`));
+      assert.equal(metaOf(html, 'og:image'), `https://batuque.martonpaulo.com/social/${rhythm.id}.png`);
+      assert.equal(metaOf(html, 'twitter:image'), metaOf(html, 'og:image'), rhythm.id);
+      assert.equal(metaOf(html, 'og:image:type'), 'image/png', rhythm.id);
+      assert.match(metaOf(html, 'og:image:alt'), new RegExp(`^«${html.match(/<title>([^<]+) · Batuque<\/title>/)[1]}»`), rhythm.id);
       assert.ok(existsSync(path.join(out, 'social', `${rhythm.id}.png`)), rhythm.id);
     }
+    // #69: the home page leads with the brand, and its card is the host's one JPEG, described in words
+    const home = readFileSync(path.join(out, 'index.html'), 'utf8'),
+      homeTitle = home.match(/<title>([^<]+)<\/title>/)[1];
+    assert.match(homeTitle, /^Batuque · \S/);
+    assert.ok(homeTitle.length <= HOME_TITLE_LIMIT, `${homeTitle.length} characters`);
+    assert.equal(metaOf(home, 'og:title'), homeTitle);
+    assert.equal(metaOf(home, 'og:image'), 'https://batuque.martonpaulo.com/social-card.jpg');
+    assert.equal(metaOf(home, 'twitter:image'), metaOf(home, 'og:image'));
+    assert.equal(metaOf(home, 'og:image:type'), 'image/jpeg');
+    assert.ok(metaOf(home, 'og:image:alt').length > 0);
+    const card = readFileSync(path.join(out, 'social-card.jpg'));
+    assert.deepEqual([...card.subarray(0, 3)], JPEG_START, 'a JPEG file');
+    assert.ok(card.length < CARD_BYTES_LIMIT, `${card.length} bytes`);
+    assert.ok(existsSync(path.join(out, 'favicon.ico')));
+    // a rhythm being prepared has no card of its own: its page keeps the site's
+    for (const id of ROUTES.filter(route => !RHYTHMS.some(rhythm => rhythm.id === route)))
+      assert.equal(metaOf(readFileSync(path.join(out, `${id}.html`), 'utf8'), 'og:image:type'), 'image/jpeg', id);
     const sitemap = readFileSync(path.join(out, 'sitemap.xml'), 'utf8');
     assert.deepEqual(
       [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]),

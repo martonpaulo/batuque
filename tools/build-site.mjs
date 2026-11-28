@@ -20,7 +20,20 @@ import { PREPARING, preparingLine } from '../src/rhythms/preparing.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_NAME = 'Batuque';
-const COPIED = ['index.html', '404.html', 'styles.css', 'src', 'social.png', 'social', 'apple-touch-icon.png', 'icon.svg', 'icons', 'CNAME', '.nojekyll'];
+const COPIED = [
+  'index.html',
+  '404.html',
+  'styles.css',
+  'src',
+  'social-card.jpg',
+  'social',
+  'favicon.ico',
+  'apple-touch-icon.png',
+  'icon.svg',
+  'icons',
+  'CNAME',
+  '.nojekyll',
+];
 
 // What only a development page loads: the in-page video export and the stage capture it draws with.
 export const DEVELOPMENT_MODULES = ['src/export.js', 'src/stage-capture.js'];
@@ -36,6 +49,9 @@ export function published(html) {
 const escapeHtml = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const LD_JSON = /<script type="application\/ld\+json">(.*)<\/script>/;
 const capitalized = text => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** A shipped rhythm's own share card (tools/make-images.mjs): its file, its type and what it shows. */
+const cardOf = (id, title) => ({ file: `social/${id}.png`, type: 'image/png', alt: COPY.card.alt(title) });
 
 /** index.html with the title, description, address, preview and structured data of one route (#31). */
 function withRoute(html, { id, title, description, origin, image, themeColor }) {
@@ -62,7 +78,10 @@ function withRoute(html, { id, title, description, origin, image, themeColor }) 
     .replace(/(<link rel="canonical" href=")[^"]*"/, `$1${url}"`)
     .replace(/(<meta name="theme-color" content=")[^"]*"/, (all, start) => (themeColor ? `${start}${themeColor}"` : all))
     .replace(/(<meta property="og:url" content=")[^"]*"/, `$1${url}"`)
-    .replace(/(<meta property="og:image" content=")[^"]*"/, (all, start) => (image ? `${start}${origin}/${image}"` : all))
+    .replace(/(<meta property="og:image" content=")[^"]*"/, (all, start) => (image ? `${start}${origin}/${image.file}"` : all))
+    .replace(/(<meta name="twitter:image" content=")[^"]*"/, (all, start) => (image ? `${start}${origin}/${image.file}"` : all))
+    .replace(/(<meta property="og:image:type" content=")[^"]*"/, (all, start) => (image ? `${start}${image.type}"` : all))
+    .replace(/(<meta property="og:image:alt" content=")[^"]*"/, (all, start) => (image ? `${start}${escapeHtml(image.alt)}"` : all))
     .replace(LD_JSON, () => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`);
 }
 
@@ -169,7 +188,7 @@ export function buildSite(out, root = ROOT, version = '') {
       const title = capitalized(rhythm.copy.selector || rhythm.copy.name);
       writeFileSync(
         path.join(out, `${id}.html`),
-        finish(withRoute(html, { id, title, description: rhythm.copy.description, origin, themeColor: rhythm.copy.themeColor, image: `social/${id}.png` })),
+        finish(withRoute(html, { id, title, description: rhythm.copy.description, origin, themeColor: rhythm.copy.themeColor, image: cardOf(id, title) })),
       );
     } else if (PREPARING[id]) {
       writeFileSync(

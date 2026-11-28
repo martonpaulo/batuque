@@ -19,6 +19,8 @@ export const COPY = {
     comeBack: n => `VOLTA EM ${n}`,
     ...RHYTHM.copy.centre,
   },
+  // a rhythm's share card, described for a link preview that shows no picture (#69)
+  card: { alt: title => `«${title}» em letras grandes, o ícone do Batuque e uma cena do palco do show` },
   // the legend under every block of rows of strokes: one word a mark, the same in every show (#73)
   marks: { strong: 'batida', soft: 'fraca', roll: 'rufo', echo: 'eco', rest: 'pausa', beat: 'tempo' },
   // the card of an instrument that enters, in a scene whose title already names it (#71)

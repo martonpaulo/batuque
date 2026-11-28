@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 // Render the share cards (the brand, or one rhythm's name, the icon and a frame of the stage) and
-// every PNG icon from icon.svg (#30, #31).
-// Usage: node tools/make-images.mjs   (writes social.png, social/<id>.png, apple-touch-icon.png and icons/*.png)
+// every icon from icon.svg (#30, #31, #69).
+// Usage: node tools/make-images.mjs   (writes social-card.jpg, social/<id>.png, favicon.ico, apple-touch-icon.png and icons/*.png)
+// The site's card is a JPEG, as the page-metadata standard asks: it needs ImageMagick (`magick`, or `convert`).
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer-core';
 import { RHYTHMS, ROUTES, rhythmChoices } from '../src/rhythms/index.js';
 import { createShow } from '../src/show.js';
+import { icoOf } from './ico.mjs';
 import { startStaticServer } from './static-server.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,6 +23,10 @@ const ICONS = [
   { file: 'icons/icon-192.png', size: 192 },
   { file: 'icons/icon-512.png', size: 512 },
 ];
+const FAVICON_SIZES = [16, 32, 48]; // favicon.ico: the tab, a dense tab and Google Search's 48 px
+// the standard's card: quality 92, full chroma, progressive, no metadata
+const JPEG = ['png:-', '-strip', '-quality', '92', '-sampling-factor', '4:4:4', '-interlace', 'Plane', 'jpg:-'];
+const JPEG_BYTES_MOST = 64 * 1024 * 1024; // the largest answer taken from ImageMagick; a card is about 100 kB
 const BRAND = 'Batuque'; // the site name, as tools/build-site.mjs SITE_NAME
 const STAGE_HEIGHT = 590; // the stage capture's height in the card; its width follows the stage
 const SOCIAL_POSITION = 21.4; // bars: the marcação, with its score and wheel
@@ -81,6 +88,18 @@ async function shareCard(browser, url, { route, position, heading, line }) {
   return png;
 }
 
+/** A PNG picture as the standard's JPEG, by ImageMagick: `magick` (version 7) or `convert` (version 6). */
+function jpegOf(png) {
+  for (const command of ['magick', 'convert']) {
+    try {
+      return execFileSync(command, JPEG, { input: png, maxBuffer: JPEG_BYTES_MOST });
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+  throw new Error('the site card is a JPEG and needs ImageMagick: install it (`brew install imagemagick`), then run this again');
+}
+
 const server = await startStaticServer(ROOT, 0, { routes: ROUTES });
 const browser = await puppeteer.launch({
   executablePath: CHROME,
@@ -91,7 +110,10 @@ try {
   const line = rhythmChoices('')
     .map(choice => choice.label.replaceAll(' ', '\u00a0'))
     .join(' · ');
-  writeFileSync(path.join(ROOT, 'social.png'), await shareCard(browser, server.url, { route: '', position: SOCIAL_POSITION, heading: BRAND, line }));
+  writeFileSync(
+    path.join(ROOT, 'social-card.jpg'),
+    jpegOf(await shareCard(browser, server.url, { route: '', position: SOCIAL_POSITION, heading: BRAND, line })),
+  );
   // one card per shipped rhythm (#31): its name over a frame from the middle of its show
   mkdirSync(path.join(ROOT, 'social'), { recursive: true });
   for (const rhythm of RHYTHMS) {
@@ -107,13 +129,17 @@ try {
   const svg = readFileSync(path.join(ROOT, 'icon.svg'), 'utf8');
   const icon = await browser.newPage();
   mkdirSync(path.join(ROOT, 'icons'), { recursive: true });
-  for (const { file, size } of ICONS) {
+  const iconAt = async size => {
     await icon.setViewport({ width: size, height: size, deviceScaleFactor: 1 });
     await icon.setContent(`<body style="margin:0">${svg.replace('<svg ', `<svg width="${size}" height="${size}" style="display:block" `)}</body>`);
-    writeFileSync(path.join(ROOT, file), await icon.screenshot({ type: 'png', omitBackground: true }));
-  }
+    return Buffer.from(await icon.screenshot({ type: 'png', omitBackground: true }));
+  };
+  for (const { file, size } of ICONS) writeFileSync(path.join(ROOT, file), await iconAt(size));
+  const sizes = [];
+  for (const size of FAVICON_SIZES) sizes.push(await iconAt(size));
+  writeFileSync(path.join(ROOT, 'favicon.ico'), icoOf(sizes));
 } finally {
   await browser.close();
   await server.close();
 }
-console.log(`wrote social.png, social/<id>.png and ${ICONS.map(icon => icon.file).join(', ')}`);
+console.log(`wrote social-card.jpg, social/<id>.png, favicon.ico and ${ICONS.map(icon => icon.file).join(', ')}`);
