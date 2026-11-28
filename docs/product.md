@@ -144,7 +144,9 @@ The rules every rhythm package in `src/rhythms/` follows.
   ([#73](https://github.com/martonpaulo/batuque/issues/73), D46).
 - **Background.** Circular, coming out of the central wheel, in the rhythm's palette from section 5
   of [`colour-and-visuals.md`](research/colour-and-visuals.md): brega in desaturated blue
-  and muted rose, bregafunk in purple, magenta and gold. The approved backgrounds are a sketch to
+  and muted rose, bregafunk in purple, magenta and gold. An instrument's colour, which also writes
+  its name, has at least 4.5:1 against the stage's base colour; a palette colour under it is made
+  lighter ([#68](https://github.com/martonpaulo/batuque/issues/68), D48). The approved backgrounds are a sketch to
   improve, not a finished design. Flashes stay within WCAG 2.3.1. A background moves through the
   whole show and follows the music: faster and stronger where the music is busy, slower and softer
   where it is calm ([#63](https://github.com/martonpaulo/batuque/issues/63)). The engine gives every

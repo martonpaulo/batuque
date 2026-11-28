@@ -114,7 +114,9 @@ The zabumba leads the timing; the triângulo's off-beat sixteenths sit about 10 
   zabumba's leather, the bacalhau's rod, the triângulo's steel, the sanfona's red body (the tune)
   and mother-of-pearl buttons (the left hand), the rabeca's varnish, the bandolim's spruce. The
   cavaquinho takes the faded teal and the bass the incoming dusk blue, as no material sets them
-  apart.
+  apart. The sanfona's red is `#c95347`, a twentieth lighter than the research's `#c4473a`, so its
+  name, written in its colour, has 4.5:1 against the stage's base colour
+  ([#68](https://github.com/martonpaulo/batuque/issues/68), D48).
 - **Background.** Its own, through the engine's one `background.create()` hook, in
   [`forro-backdrop.js`](../../src/rhythms/forro-backdrop.js), circular
   and coming out of the wheel: a dusk sky from bonfire orange to night indigo, whose warm light

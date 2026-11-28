@@ -23,7 +23,7 @@ export const FORRO = {
   dusk: '#7d8fd6', // the blue that comes in as the light leaves: the bass
   ember: '#e08a2e', // the bonfire
   flame: '#f2c14e',
-  red: '#c4473a', // the sanfona's red body
+  red: '#c95347', // the sanfona's red body, lighter than the research so its name reads at 4.5:1 (#68)
   teal: '#6fb7c2', // the faded teal of saudade: the cavaquinho
   paper: '#e9dcc0', // cordel paper
   leather: '#d9a066', // the zabumba's goat skin

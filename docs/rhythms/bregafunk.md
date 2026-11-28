@@ -155,8 +155,8 @@ pink `#ff2e88` of that note was dropped: the expansion decision says pink repeat
 
 | Voice     | Colour    | Reading                              |
 | :-------- | :-------- | :----------------------------------- |
-| bumbo     | `#b81fd6` | the parties' neon purple             |
-| grave     | `#7d4dff` | a deeper violet under the bumbo      |
+| bumbo     | `#c32ee1` | the parties' neon purple             |
+| grave     | `#8457ff` | a deeper violet under the bumbo      |
 | lata      | `#c6f432` | the lime of the paredão LEDs         |
 | palma     | `#3fe0d0` | the turquoise of the LED strips      |
 | chimbal   | `#d4dbe0` | the metal of the cymbals             |
@@ -164,6 +164,10 @@ pink `#ff2e88` of that note was dropped: the expansion decision says pink repeat
 | flauta    | `#ff7a3d` | a phone screen lit in the dark       |
 | metais    | `#ffd23f` | brass gold, and the gold of the drop |
 | tamborzão | `#c4875a` | the atabaque's leather               |
+
+The bumbo and the grave are a twentieth lighter than the research's `#b81fd6` and the first `#7d4dff`:
+an instrument's name is written in its colour, and each now has 4.5:1 against the stage's base
+colour ([#68](https://github.com/martonpaulo/batuque/issues/68), D48).
 
 ## Background and wheel motion
 

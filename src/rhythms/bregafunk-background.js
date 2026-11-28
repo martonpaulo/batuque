@@ -12,8 +12,8 @@ import { hash, lerp } from '../util.js';
 
 export const PALETTE = {
   ground: '#0d0612', // the night
-  purple: '#b81fd6', // the parties' neon purple: the bumbo and the swaying rings
-  violet: '#7d4dff', // the grave, under the bumbo
+  purple: '#c32ee1', // the parties' neon purple: the bumbo and the swaying rings
+  violet: '#8457ff', // the grave, under the bumbo
   lime: '#c6f432', // the paredão LEDs: the lata
   tin: '#d4dbe0', // the metal of the chimbais
   aqua: '#3fe0d0', // the palma: the turquoise of the LED strips

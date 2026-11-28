@@ -10,9 +10,12 @@ import { FREVO } from '../src/rhythms/frevo.js';
 import { preparingIds, RHYTHM, RHYTHMS, ROUTES, redirectFor, rhythmChoices, rhythmFor } from '../src/rhythms/index.js';
 import { MARACATU } from '../src/rhythms/maracatu.js';
 import { createShow } from '../src/show.js';
+import { COLORS } from '../src/theme.js';
+import { contrast } from './support/contrast.js';
 import { TWO_FOUR } from './support/rhythm-two-four.js';
 
 const BOTH = [MARACATU, TWO_FOUR];
+const TEXT_CONTRAST = 4.5; // WCAG 1.4.3, text under 24 px: an instrument's name is written in its colour
 
 test('the site ships maracatu, the coco, frevo, forró, manguebeat, brega and bregafunk, and shows maracatu by default', () => {
   assert.deepEqual(
@@ -296,4 +299,13 @@ test('the builder of rows of strokes names every row, draws the line between bea
   assert.throws(() => notation(2, [{ name: 'surdo', marks: ['beat'] }]), /beat is not a mark/);
   // every mark has a word for the legend, and no word is without a mark
   assert.deepEqual(Object.keys(COPY.marks).sort(), Object.keys(MARKS).sort());
+});
+
+test("every voice's colour, which writes its name on the stage, has 4.5:1 against the stage's base colour", () => {
+  for (const rhythm of RHYTHMS) {
+    for (const [voice, { color }] of Object.entries(rhythm.voices)) {
+      const ratio = contrast(color, COLORS.void);
+      assert.ok(ratio >= TEXT_CONTRAST, `${rhythm.id} ${voice} ${color}: ${ratio.toFixed(2)}:1`);
+    }
+  }
 });
