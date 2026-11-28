@@ -22,7 +22,7 @@ export const COPY = {
   // the legend under every block of rows of strokes: one word a mark, the same in every show (#73)
   marks: { strong: 'batida', soft: 'fraca', roll: 'rufo', echo: 'eco', rest: 'pausa', beat: 'tempo' },
   // the card of an instrument that enters, in a scene whose title already names it (#71)
-  entry: { strokes: 'batidas no compasso' },
+  entry: { strokes: 'batidas no compasso', bar: 'compasso' }, // `bar` names the row of strokes: the title is the instrument's name
   controls: {
     rhythm: 'Ritmo', // the rhythm selector, shown only with two or more rhythms
     play: '▶ Tocar',

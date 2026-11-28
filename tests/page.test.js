@@ -621,6 +621,11 @@ function saidTwiceInPage(scenes) {
       window.baque.render(scene.start + bar + 0.5);
       if (document.querySelector('#read [data-entry]')) cards++;
       const title = said(document.querySelector('#head .title').textContent);
+      // the card's small type does not say the title again either, and a title of two parts has a row for each
+      const names = [...document.querySelectorAll('#read [data-entry] .strokes > .k')].map(part => said(part.textContent));
+      if (names.includes(title)) problems.add(`${scene.id}: the card names its row «${title}», as the title does`);
+      if (names.length && title.includes(' e ') && names.length < 2)
+        problems.add(`${scene.id}: the title names two parts and the card has ${names.length} row`);
       // a text of the readout: an element with words of its own
       const texts = [...document.querySelectorAll('#read *')].filter(part =>
         [...part.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.data.trim()),

@@ -117,24 +117,34 @@ export function createReadout(element, volume = {}) {
           hand = COPY.hands?.[voice] || '';
         const muted = !isHeard(volume, voice);
         entry.classList.toggle('muted', muted);
-        const hits = barTimeline(scene.start + barInScene).voices[voice],
-          count = `${hits.length}/${STEPS_PER_BAR}`,
-          state = `<div class="k">${muted ? T.entersMuted : T.enters}</div>`;
-        // A scene whose title already names the instrument says it once: the card then shows the
-        // part itself, its count in the large type and its strokes on the bar, named by its hand (#71).
-        entry.innerHTML = named(COPY.scenes[scene.id].title, name)
-          ? `<div class="k">${muted ? T.entersMuted : COPY.entry.strokes}</div><div class="big count" style="color:${color}">${count}</div>` +
-            notation(STEPS_PER_BEAT, [
-              {
-                name: hand || name,
-                color,
-                marks: marksAt(
-                  STEPS_PER_BAR,
-                  hits.map(({ hit }) => Math.floor(hit.step)),
-                ),
-              },
-            ])
-          : `${state}<div class="big" style="color:${color}">${name}</div>${row(label(hand, color), count)}`;
+        const played = barTimeline(scene.start + barInScene).voices,
+          title = COPY.scenes[scene.id].title;
+        const nameOf = part => (isHand(part) ? COPY.instruments[VOICES[part].instrument] : COPY.voices[part]);
+        if (named(title, name)) {
+          // A scene whose title already names what enters says it once: the card shows the part
+          // itself, its count in the large type and its strokes on the bar. The row is named by its
+          // hand, else as the bar: the title is the instrument's name. A title of two instruments
+          // («Agogô e abê») gets a row for each, named, with its count (#71).
+          const alone = title.toLocaleLowerCase() === name.toLocaleLowerCase();
+          const parts = alone ? [voice] : scene.voices(barInScene).filter(part => named(title, nameOf(part)));
+          const rows = parts.map(part => ({
+            name: COPY.hands?.[part] || (alone ? COPY.entry.bar : nameOf(part)),
+            color: VOICES[part].color,
+            marks: marksAt(
+              STEPS_PER_BAR,
+              played[part].map(({ hit }) => Math.floor(hit.step)),
+            ),
+            count: alone ? '' : played[part].length,
+          }));
+          const count = alone ? `${played[voice].length}/${STEPS_PER_BAR}` : parts.map(part => played[part].length).join(' + ');
+          entry.innerHTML =
+            `<div class="k">${muted ? T.entersMuted : COPY.entry.strokes}</div><div class="big count" style="color:${color}">${count}</div>` +
+            notation(STEPS_PER_BEAT, rows);
+        } else {
+          entry.innerHTML =
+            `<div class="k">${muted ? T.entersMuted : T.enters}</div><div class="big" style="color:${color}">${name}</div>` +
+            row(label(hand, color), `${played[voice].length}/${STEPS_PER_BAR}`);
+        }
         fillLegends(entry, COPY.marks);
         replayFade(entry);
       }
