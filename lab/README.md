@@ -111,13 +111,14 @@ more cells at once. So each scene's line ends with that area
 ([#67](https://github.com/martonpaulo/batuque/issues/67)): the largest share of a 10° field (341 by
 256 CSS px, upright or on its side) whose cells make more than three flashes in the same second,
 and when; the show's last line says whether any scene passes a quarter. A flash to or from a
-saturated red is not told apart from any other.
+saturated red is not told apart from any other, and each scene is measured alone: the 0.2 s at a
+scene's ends and a second that crosses a scene change are in no measurement.
 
 ```sh
 node lab/motion.mjs coco                       # one show: about a minute
 node lab/motion.mjs coco frevo --seconds 2     # several, a shorter window
 node lab/motion.mjs brega --shots out/brega    # also one picture of the stage per scene
-node lab/motion.mjs maracatu --seconds 600     # the whole of each scene, for the flash limit
+node lab/motion.mjs maracatu --seconds 600     # each scene but 0.2 s at its ends, for the flash limit
 node lab/motion.mjs maracatu --window 1440x900 # at a desktop's window, where the stage is larger
 ```
 

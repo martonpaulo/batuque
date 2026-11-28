@@ -2,7 +2,8 @@
 // and whether anything flashes, through the real page (#63).
 // usage: node lab/motion.mjs <id>... [--seconds N] [--shots DIR] [--window WIDTHxHEIGHT]
 //   --seconds: how long to measure in the middle of each scene (default 3); a number longer than a
-//              scene measures the whole of it
+//              scene measures it all but the 0.2 s at each end. Each scene is measured alone, so a
+//              second that crosses a scene change is in no measurement
 //   --window: the window's size in CSS px (default 393x852, a phone)
 //   --shots: a folder for one picture of the stage per scene, as the viewer sees it while it plays
 // It draws each frame with `window.baque.frame`, the call the video export makes, with motion on,
