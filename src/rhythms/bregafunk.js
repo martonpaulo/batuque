@@ -1,7 +1,7 @@
 // Bregafunk: everything the engine plays and shows that belongs to this rhythm (Recife, since about
 // 2009). 171 BPM: one 16-sixteenth bar per turn of the wheel (1.40 s). Sparse and hard, as the
 // reference recordings are: the bumbo on 1 and 9, the metallic «lata» on 7 and 13 (bumbo and lata
-// group the bar as 3 + 3 + 2 eighths), a palma with the second bumbo, a few dry chimbais, a flute
+// group the bar as 3 + 3 + 2 eighths), a palma on every beat, a few dry chimbais, a flute
 // riff of three notes two bars long (A Phrygian: lá, si bemol, mi), the short 808 «grave» that plays
 // the riff's notes, and a keyboard stab with the lata. Round two (#47): the riff opens the show, the
 // beat drops whole, and the drums stop for a bar and come back, as the four references do.
@@ -46,13 +46,15 @@ const VOICE_ORDER = Object.keys(VOICES);
 const hit = (step, velocity, tone) => (tone ? { step, velocity, tone } : { step, velocity });
 const at = part => part.steps.map((step, i) => hit(step, part.velocity[i % part.velocity.length]));
 
-// What the reference's drums play, per sixteenth of 170 (docs/rhythms/bregafunk.md, The beat): the
-// bumbo on 1 and 9, the lata on 7 and 13, a palma with the second bumbo. A phrase's last bar («turn»)
-// adds a pick-up bumbo and a second lata stroke.
+// What the references' drums play, per sixteenth (docs/rhythms/bregafunk.md, The beat): the bumbo on
+// 1 and 9, the lata on 7 and 13, and a palma on every beat, strong on 5 and 13, between the bumbos,
+// and soft with them on 1 and 9. The references strike on every beat in the mid band; with one palma
+// a bar, on 9, the show's only regular pulse was every second beat, and it felt slow (#75). A
+// phrase's last bar («turn») adds a pick-up bumbo and a second lata stroke.
 export const BEAT = {
   bumbo: { steps: [0, 8], velocity: [1, 0.92] },
   lata: { steps: [6, 12], velocity: [1, 0.9] },
-  palma: { steps: [8], velocity: [0.9] },
+  palma: { steps: [0, 4, 8, 12], velocity: [0.45, 0.9] },
 };
 const TURN = {
   bumbo: { steps: [0, 8, 14], velocity: [1, 0.92, 0.7] },
@@ -560,7 +562,7 @@ const READ = {
   grouping: 'agrupamento',
   groupingValue: GROUPING.join(' + '),
   groupingUnit: 'colcheias',
-  withKick: 'com o bumbo',
+  everyBeat: 'palma, em cada tempo',
   few: 'chimbais',
   fewValue: `${HATS.plain.length} por compasso, secos`,
   notes: 'notas',
@@ -642,7 +644,7 @@ const LAYOUTS = {
   batida: () =>
     notation(notationRow(COPY.voices.bumbo, BEAT.bumbo.steps, 'bumbo'), notationRow(COPY.voices.lata, BEAT.lata.steps, 'lata')) +
     row(label(T.grouping), `${T.groupingValue} ${T.groupingUnit}`) +
-    row(label(T.withKick), countFromOne(BEAT.palma.steps), 'palma'),
+    row(label(T.everyBeat), countFromOne(BEAT.palma.steps), 'palma'),
   juntos: () => row(label(T.riff), T.notesValue, 'flauta') + row(label(T.stop), T.stopValue) + row(label(T.few), T.fewValue, 'chimbal'),
   grave: () => entry + row(label(T.likeRiff), T.notesValue, 'grave') + row(label(T.low), T.likeRiffValue, 'grave'),
   parada: () => stats('two', stat(1, T.silentBeat, PALETTE.gold), stat(sceneOf('parada').voices().length, T.voices, PALETTE.tin)),

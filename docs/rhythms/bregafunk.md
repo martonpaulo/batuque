@@ -61,7 +61,7 @@ and it is the largest single change in this page.
 | :-------- | :----------------------------------- | :----------------------------------------------------------------------------------- |
 | bumbo     | 1, 9; a pick-up on 15 at phrase ends | Beats 1 and 3, hard and clear (rules 6 and 7)                                        |
 | lata      | 7, 13; a second stroke on 14 at ends | With the first bumbo it groups the bar as 3 + 3 + 2 eighths, the dembow-like bounce  |
-| palma     | 9                                    | A clap on the second bumbo, the backbeat of the «pancadão»                           |
+| palma     | 1, 5, 9, 13; strong on 5 and 13      | A clap on every beat, as the references' mid band strikes (#75): soft with the bumbo |
 | chimbal   | 3, 5, 11, 15                         | Few and dry; the last one open every other bar; a 32nd-note roll at phrase ends      |
 | grave     | 1 (held), 9, and 13 sliding          | The 808 follows the bumbo; every other bar a note slides into the next bar's root    |
 | teclado   | 7, 13                                | The synth stab plays with the lata, as in the reference; a pick-up at phrase ends    |
@@ -310,6 +310,15 @@ Written from the accepted elements and form above; it is heard by the owner befo
   the horns answer. The eight-bar tune of the first round is gone; the drop keeps one stuttered bar.
 - **The grave** plays the riff's notes two octaves down: five or six notes a bar, each one or two
   sixteenths, with the bumbo on 1 and 9, and its last note slides back to the tonic.
+- **The palma** strikes on every beat, strong on 5 and 13 and soft with the bumbo on 1 and 9
+  ([#75](https://github.com/martonpaulo/batuque/issues/75)). The owner heard this rewrite with one
+  palma a bar, on 9, and said it still felt slow. Measured with the lab's `cell.py` (on `main`,
+  «The pulse a listener counts» of this document there): the references' mid band repeats at the
+  beat at 0.47 to 0.60, and the rewrite's read 0.22, so its only regular pulse was every second
+  beat. With the palma on every beat the render reads 0.57, and `lab/sections.py pulse` finds the
+  beat, 348 ms, at 0.60. The stops, the breath and the tease keep their one palma. How exactly the
+  bar repeats is unchanged (0.84 over all bands; the references read 0.44 to 0.61): that is the
+  form's and the riff's to vary.
 - **The harmony** is the riff's: the stab is the tonic's root, fifth and octave in the first bar and
   the flat second's bare octave in the second. No chord adds a fourth note to the riff's three but
   the horns' third.

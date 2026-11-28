@@ -67,12 +67,11 @@ test('the beat is sparse: a few hard hits with space between them, never a wall 
   assert.ok(rate >= 4 && rate <= 8, `${rate.toFixed(1)} onsets a second`);
 });
 
-test('the bumbo on 1 and 9 and the lata on 7 and 13 group the bar as 3 + 3 + 2 eighths, the palma with the second bumbo', () => {
+test('the bumbo on 1 and 9 and the lata on 7 and 13 group the bar as 3 + 3 + 2 eighths', () => {
   const batida = show.sceneById('batida');
   assert.deepEqual(stepsOf(batida.start, 'lata'), BEAT.lata.steps);
   assert.deepEqual(stepsOf(batida.start, 'lata'), [6, 12]);
   assert.deepEqual(stepsOf(batida.start, 'bumbo'), [0, 8]);
-  assert.deepEqual(stepsOf(batida.start, 'palma'), [8]);
   const tresillo = [BEAT.bumbo.steps[0], ...BEAT.lata.steps];
   assert.deepEqual(
     tresillo.map((step, i) => ((tresillo[(i + 1) % tresillo.length] - step + 16) % 16) / 2),
@@ -80,6 +79,38 @@ test('the bumbo on 1 and 9 and the lata on 7 and 13 group the bar as 3 + 3 + 2 e
   );
   // the passinho doubles the bumbo
   assert.deepEqual(stepsOf(show.sceneById('passinho').start, 'bumbo'), PASSINHO.bumbo.steps);
+});
+
+// #75: the references strike on every beat in the mid band (lab/cell.py: 0.47 to 0.60 at the beat),
+// and the show clapped once a bar, with the second bumbo: its only regular pulse was every second
+// beat, 85 a minute, and the owner heard a slow show. The palma now marks every beat.
+test('the palma strikes on every beat, strong between the bumbos and soft with them, in a plain bar, a turn and the passinho', () => {
+  const BEATS = [0, 4, 8, 12];
+  const palmas = bar => show.hitsInBar(bar).filter(h => h.voice === 'palma');
+  const batida = show.sceneById('batida'),
+    passinho = show.sceneById('passinho');
+  for (const [name, bar] of [
+    ['a plain bar', batida.start],
+    ['a turn', batida.start + batida.bars - 1],
+    ['the passinho', passinho.start],
+  ]) {
+    assert.deepEqual(
+      palmas(bar).map(h => h.hit.step),
+      BEATS,
+      name,
+    );
+    const [one, two, three, four] = palmas(bar).map(h => h.hit.velocity);
+    assert.ok(two > one && four > three && two === four && one === three, `${name}: ${[one, two, three, four]}`);
+    // the soft strokes are the bumbo's beats
+    assert.deepEqual(
+      stepsOf(bar, 'bumbo').filter(step => BEATS.includes(step)),
+      [0, 8],
+      name,
+    );
+  }
+  // a stop and the breath keep their one palma: the form's thin bars stay thin
+  const respiro = show.sceneById('respiro');
+  assert.equal(palmas(respiro.start).length, 1);
 });
 
 // Round two (docs/rhythms/bregafunk.md): the riff opens the show, a few strokes tease the beat, and
